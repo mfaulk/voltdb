@@ -53,9 +53,11 @@ public interface ConsumerDRGateway extends Promotable {
      */
     void setInitialConversationMembership(byte dataSourceCluster, List<MeshMemberInfo> expectedClusterMembers);
 
+    void setup();
+
     void initialize(StartAction startAction, boolean doActualRecover);
 
-    void shutdown(final boolean isRestart, final boolean blocking) throws InterruptedException, ExecutionException;
+    void shutdown(final boolean blocking) throws InterruptedException, ExecutionException;
 
     void restart(final boolean blocking) throws InterruptedException, ExecutionException;
 
