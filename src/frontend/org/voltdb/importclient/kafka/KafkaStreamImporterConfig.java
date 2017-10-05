@@ -46,6 +46,7 @@ import kafka.javaapi.consumer.SimpleConsumer;
 public class KafkaStreamImporterConfig implements ImporterConfig
 {
     private static final Logger m_logger = Logger.getLogger("IMPORT");
+    private static final Logger m_loggerManager = Logger.getLogger("ImporterTypeManager");
 
     public static final String CLIENT_ID = "voltdb-importer";
     private static final String GROUP_ID = "voltdb";
@@ -205,7 +206,7 @@ public class KafkaStreamImporterConfig implements ImporterConfig
             if (!legalTopicNamesPattern.matcher(topic).matches()) {
                 throw new IllegalArgumentException("topic name " + topic + " is illegal, contains a character other than ASCII alphanumerics, '_' and '-'");
             }
-            m_logger.warn("process kafka topic : " + topic);
+            m_loggerManager.warn("[createConfigEntries] process kafka topic : " + topic);
             try {
                 configs.putAll(getConfigsForPartitions(key, hapList, topic, groupId, procedure, soTimeout, fetchSize, commitPolicy, formatterBuilder));
             } catch(Exception e) {
@@ -237,11 +238,16 @@ public class KafkaStreamImporterConfig implements ImporterConfig
         Map<URI, KafkaStreamImporterConfig> configs = new HashMap<>();
         List<FailedMetaDataAttempt> attempts = new ArrayList<>();
 
+        String stackTraceStr = "";
+        for (StackTraceElement ste : Thread.currentThread().getStackTrace()) stackTraceStr += ste.toString() + "\n";
+        m_loggerManager.warn("[getConfigsForPartitions] " + stackTraceStr);
+
         Iterator<HostAndPort> hpitr = brokerList.iterator();
         while (configs.isEmpty() && hpitr.hasNext()) {
             HostAndPort hp = hpitr.next();
             try {
                 consumer = new SimpleConsumer(hp.getHost(), hp.getPort(), soTimeout, fetchSize, CLIENT_ID);
+                m_loggerManager.warn("[getConfigsForPartitions] new simple consumer" );
 
                 TopicMetadataRequest req = new TopicMetadataRequest(singletonList(topic));
                 kafka.javaapi.TopicMetadataResponse resp = consumer.send(req);
@@ -255,10 +261,15 @@ public class KafkaStreamImporterConfig implements ImporterConfig
                     consumer = null;
                     continue;
                 }
+
+                m_loggerManager.warn("[getConfigsForPartitions] metaData: " +  Arrays.toString(metaData.toArray()));
+
                 int partitionCount = 0;
                 for (TopicMetadata item : metaData) {
+                    m_loggerManager.warn("topic meta data: " + item);
                     for (PartitionMetadata part : item.partitionsMetadata()) {
                         ++partitionCount;
+                        m_loggerManager.warn("PartitionMetadata: " + part + ", partition count: " + partitionCount);
                         URI uri;
                         try {
                             uri = new URI("kafka", key, topic + "/partition/" + part.partitionId() + "/" + groupId + "/");
@@ -280,6 +291,7 @@ public class KafkaStreamImporterConfig implements ImporterConfig
                     }
                 }
                 if (configs.size() != partitionCount) {
+                    m_loggerManager.warn("incorrect counts: " + configs.size() + " -> " + partitionCount);
                     configs.clear();
                     closeConsumer(consumer);
                     consumer = null;
