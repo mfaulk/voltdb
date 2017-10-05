@@ -192,6 +192,7 @@ public class TestKafkaImportSuite extends RegressionSuite {
         kafkaProperties.setProperty("log.dirs", KAFKA_LOG_DIR);
         kafkaProperties.setProperty("num.partitions", "1");
         kafkaProperties.setProperty("replication", "0");
+        kafkaProperties.setProperty("advertised.host.name", LOCALHOST_NAME);
         kafkaProperties.setProperty("port", KAFKA_PORT);
         kafkaProperties.setProperty("zookeeper.connect", LOCALHOST_NAME + ":" + ZOOKEEPER_PORT);
         kafkaProperties.setProperty("zookeeper.connection.timeout.ms", "6000");
