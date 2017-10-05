@@ -113,6 +113,8 @@ public class TestKafkaImportSuite extends RegressionSuite {
         }
         Client client = getClientToHostId(0);
 
+        client.callProcedure("@AdHoc", "create table foo (a int);");
+
         // check Kafka importer result
         Stopwatch sw = Stopwatch.createStarted();
         boolean foundImportData = false;
