@@ -205,6 +205,7 @@ public class KafkaStreamImporterConfig implements ImporterConfig
             if (!legalTopicNamesPattern.matcher(topic).matches()) {
                 throw new IllegalArgumentException("topic name " + topic + " is illegal, contains a character other than ASCII alphanumerics, '_' and '-'");
             }
+            m_logger.warn("process kafka topic : " + topic);
             try {
                 configs.putAll(getConfigsForPartitions(key, hapList, topic, groupId, procedure, soTimeout, fetchSize, commitPolicy, formatterBuilder));
             } catch(Exception e) {

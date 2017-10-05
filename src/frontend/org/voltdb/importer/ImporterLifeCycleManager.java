@@ -85,10 +85,12 @@ public class ImporterLifeCycleManager implements ChannelChangeCallback
     public final void configure(Properties props, FormatterBuilder formatterBuilder)
     {
         Map<URI, ImporterConfig> configs = m_factory.createImporterConfigurations(props, formatterBuilder);
+        s_logger.warn("[ImporterLifeCycleManager] create import configuration : " + configs.size());
         m_configs = new ImmutableMap.Builder<URI, ImporterConfig>()
                 .putAll(configs)
                 .putAll(Maps.filterKeys(m_configs, not(in(configs.keySet()))))
                 .build();
+        s_logger.warn("[ImporterLifeCycleManager] new import configuration : " + m_configs.size());
     }
 
     public final int getConfigsCount() {
